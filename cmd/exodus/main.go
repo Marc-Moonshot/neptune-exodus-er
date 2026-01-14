@@ -7,6 +7,7 @@ import (
 	"github.com/Marc-Moonshot/neptune-exodus-er/internal/adapters/firestore"
 	"github.com/Marc-Moonshot/neptune-exodus-er/internal/adapters/rabbitmq"
 	"github.com/Marc-Moonshot/neptune-exodus-er/internal/config"
+	"github.com/Marc-Moonshot/neptune-exodus-er/internal/services/watcher"
 )
 
 func main() {
@@ -49,9 +50,8 @@ func main() {
 }
 
 func runWatcher(ctx context.Context, fs *firestore.Client, mq *rabbitmq.Client) {
-	// svc := watcher.NewService(fs, mq)
-	// svc.Start(ctx)
-
+	svc := watcher.NewService(fs, mq)
+	svc.Start(ctx)
 }
 
 // func runWorker(fs *firestore.Client, mq *rabbitmq.Client) {
