@@ -1,0 +1,42 @@
+package firestore
+
+import (
+	"context"
+	"log"
+
+	gfs "cloud.google.com/go/firestore"
+	"github.com/Marc-Moonshot/neptune-exodus-er/internal/config"
+	"google.golang.org/api/option"
+)
+
+type Client struct {
+	client     *gfs.Client
+	collection string
+}
+
+func NewClient(ctx context.Context, cfg *config.Config) (*Client, error) {
+	// TODO: create new firestore client
+	client, err := gfs.NewClient(ctx, cfg.ProjectID, option.WithCredentialsFile(cfg.ApplicationCredentials))
+	if err != nil {
+		log.Println("Error initializing firestore client.")
+		log.Fatal(err)
+	}
+
+	fsClient := Client{
+		client:     client,
+		collection: cfg.CollectionName,
+	}
+	return &fsClient, nil
+}
+
+func (c *Client) Close() error {
+	return c.client.Close()
+}
+
+func (c *Client) ListenForPendingJobs() {
+	// TODO: listen for migration jobs with status of "PENDING" and return them
+}
+
+func (c *Client) UpdateJobStatus() {
+	// TODO: update job status to "IN_PROGRESS" in firestore collection
+}
