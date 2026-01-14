@@ -14,8 +14,8 @@ type Client struct {
 	collection string
 }
 
+// wrapper to create and return a new firestore client
 func NewClient(ctx context.Context, cfg *config.Config) (*Client, error) {
-	// TODO: create new firestore client
 	client, err := gfs.NewClient(ctx, cfg.ProjectID, option.WithCredentialsFile(cfg.ApplicationCredentials))
 	if err != nil {
 		log.Println("Error initializing firestore client.")
