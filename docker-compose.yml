@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    build:
+      context: ./rabbitMQ
+    container_name: rabbitmq_neptune
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${DOCKER_RABBIT_MQ_USERNAME}
+      RABBITMQ_DEFAULT_PASS: ${DOCKER_RABBIT_MQ_PASSWORD}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    restart: unless-stopped
+
+volumes:
+  rabbitmq_data:
