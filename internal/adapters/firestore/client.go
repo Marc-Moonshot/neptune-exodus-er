@@ -10,8 +10,8 @@ import (
 )
 
 type Client struct {
-	client     *gfs.Client
-	collection string
+	Client     *gfs.Client
+	Collection string
 }
 
 // wrapper to create and return a new firestore client
@@ -23,20 +23,20 @@ func NewClient(ctx context.Context, cfg *config.Config) (*Client, error) {
 	}
 
 	fsClient := Client{
-		client:     client,
-		collection: cfg.CollectionName,
+		Client:     client,
+		Collection: cfg.CollectionName,
 	}
 	return &fsClient, nil
 }
 
 func (c *Client) Close() error {
-	return c.client.Close()
+	return c.Client.Close()
 }
 
-func (c *Client) ListenForPendingJobs() {
-	// TODO: listen for migration jobs with status of "PENDING" and return them
-}
+// func (c *Client) ListenForPendingJobs() {
+// 	// TODO: listen for migration jobs with status of "PENDING" and return them
+// }
 
-func (c *Client) UpdateJobStatus() {
-	// TODO: update job status to "IN_PROGRESS" in firestore collection
-}
+// func (c *Client) UpdateJobStatus() {
+// 	// TODO: update job status to "IN_PROGRESS" in firestore collection
+// }
