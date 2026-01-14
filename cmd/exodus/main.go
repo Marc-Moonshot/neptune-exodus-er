@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/Marc-Moonshot/neptune-exodus-er/internal/adapters/firestore"
+	"github.com/Marc-Moonshot/neptune-exodus-er/internal/adapters/rabbitmq"
 	"github.com/Marc-Moonshot/neptune-exodus-er/internal/config"
 )
 
@@ -32,17 +33,26 @@ func main() {
 
 	log.Println("Initialized firestore.")
 
-	// 2. figure out how to connect to rabbitMQ
-	// var mqClient *rabbitmq.Client
+	var mqClient *rabbitmq.Client
+
+	mqClient, err = rabbitmq.NewClient(cfg)
+	if err != nil {
+		log.Println("Failed to init rabbitMQ.")
+		log.Fatalln(err)
+	}
+
+	defer mqClient.Close()
+	log.Println("Initialized rabbitMQ.")
 
 	// Run watcher in a goroutine, worker in main thread
-
+	go runWatcher(ctx, fsClient, mqClient)
 }
 
-// func runWatcher(ctx context.Context, fs *firestore.Client, mq *rabbitmq.Client) {
-// svc := watcher.NewService(fs, mq)
-// svc.Start(ctx)
-// }
+func runWatcher(ctx context.Context, fs *firestore.Client, mq *rabbitmq.Client) {
+	// svc := watcher.NewService(fs, mq)
+	// svc.Start(ctx)
+
+}
 
 // func runWorker(fs *firestore.Client, mq *rabbitmq.Client) {
 // 	// svc := worker.NewService(fs, mq)
