@@ -1,7 +1,5 @@
 package domain
 
-import "time"
-
 type JobStatus string
 
 const (
@@ -22,7 +20,7 @@ type MigrationJob struct {
 	ConvertData    bool      `firestore:"convertData" json:"convert_data"`
 	MigrateAllData bool      `firestore:"migrateAllData" json:"migrate_all_data"`
 	OverrideData   bool      `firestore:"createdBy" json:"override_data"`
-	CreatedAt      time.Time `firestore:"createdAt" json:"created_at"`
+	CreatedAt      int64     `firestore:"createdAt" json:"created_at"`
 	CreatedBy      string    `firestore:"createdBy" json:"created_by"`
 	Error          string    `firestore:"error,omitempty" json:"error,omitempty"`
 }
