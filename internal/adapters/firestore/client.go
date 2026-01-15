@@ -108,6 +108,7 @@ func (c *Client) ListenForPendingJobs(ctx context.Context) (<-chan domain.Migrat
 						errChan <- err
 						continue
 					}
+					job.ID = change.Doc.Ref.ID
 					select {
 					case <-ctx.Done():
 						return
