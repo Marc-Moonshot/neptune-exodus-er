@@ -2,7 +2,7 @@ package watcher
 
 import (
 	"context"
-	"fmt"
+	"log"
 
 	"github.com/Marc-Moonshot/neptune-exodus-er/internal/adapters/firestore"
 	"github.com/Marc-Moonshot/neptune-exodus-er/internal/adapters/rabbitmq"
@@ -15,7 +15,6 @@ type watcherService struct {
 }
 
 func NewService(fsClient *firestore.Client, mqClient *rabbitmq.Client) *watcherService {
-	// TODO: create new watcher service
 	return &watcherService{
 		fsClient: fsClient,
 		mqClient: mqClient,
@@ -24,21 +23,19 @@ func NewService(fsClient *firestore.Client, mqClient *rabbitmq.Client) *watcherS
 
 func (s *watcherService) Start(ctx context.Context) {
 	// TODO: listen to firestore collection for changes & call pushToQueue() if a new document isnt already in the queue
-	snapIterator := s.fsClient.Client.Collection(s.fsClient.Collection).Snapshots(ctx)
+	log.Println("Listening for pending jobs..")
+	jobs, errors := s.fsClient.ListenForPendingJobs(ctx)
 
 	for {
 		select {
 		case <-ctx.Done():
+			log.Printf("context done.")
 			return
-		default:
-			docs, err := snapIterator.Query.Where("status", "==", "PENDING").Documents(ctx).GetAll()
-			if err != nil {
-				fmt.Errorf("error getting documents: %d", err)
-			}
-
-			for _, val := range docs {
-				data := val.Data()
-			}
+		case err := <-errors:
+			log.Printf("Watcher error: %v", err)
+		case job := <-jobs:
+			log.Printf("Watcher found new job: %s", job.ID)
+			s.processNewJob(job, ctx)
 		}
 	}
 }
