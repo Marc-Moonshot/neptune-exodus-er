@@ -18,8 +18,6 @@ func main() {
 	}
 
 	log.Printf("Starting Neptune ExodusER.")
-	log.Printf("Queue URL: %s", cfg.RabbitMQURL)
-	log.Printf("Collection name: %s", cfg.CollectionName)
 
 	ctx := context.Background()
 
@@ -47,6 +45,7 @@ func main() {
 
 	// Run watcher in a goroutine, worker in main thread
 	go runWatcher(ctx, fsClient, mqClient)
+	<-ctx.Done()
 }
 
 func runWatcher(ctx context.Context, fs *firestore.Client, mq *rabbitmq.Client) {
