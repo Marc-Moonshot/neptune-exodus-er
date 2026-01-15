@@ -43,10 +43,7 @@ func (c *Client) ListenForPendingJobs(ctx context.Context) (<-chan domain.Migrat
 	errChan := make(chan error)
 
 	go func() {
-		defer close(jobsChan)
-		defer close(errChan)
-
-		query := c.Client.Collection(c.Collection).Where("status", "==", domain.StatusPending).OrderBy("createdBy", gfs.Asc)
+		query := c.Client.Collection(c.Collection).Where("status", "==", domain.StatusPending).OrderBy("createdAt", gfs.Asc)
 
 		snapIterator := query.Snapshots(ctx)
 		defer snapIterator.Stop()
