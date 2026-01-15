@@ -54,19 +54,24 @@ func (c *Client) ListenForPendingJobs(ctx context.Context) (<-chan domain.Migrat
 			snap, err := snapIterator.Next()
 
 			if err == iterator.Done {
+				log.Printf("no more items in current snapshot.")
 				break
 			}
 			if err != nil {
+				// log.Printf("error: %v", err)
 				select {
 				case <-ctx.Done():
+					log.Printf("context done.")
 					return
 				case errChan <- err:
 					// broken stream, idk what to do here
+					log.Printf("broken stream.")
 					return
 				}
 			}
 
 			if firstSnapshot {
+				log.Printf("first snapshot: ")
 				for {
 					docSnap, err := snap.Documents.Next()
 					if err == iterator.Done {
@@ -82,6 +87,8 @@ func (c *Client) ListenForPendingJobs(ctx context.Context) (<-chan domain.Migrat
 						errChan <- err
 						continue
 					}
+					job.ID = docSnap.Ref.ID
+					log.Printf("job added to channel.")
 
 					select {
 					case <-ctx.Done():
@@ -93,6 +100,7 @@ func (c *Client) ListenForPendingJobs(ctx context.Context) (<-chan domain.Migrat
 				continue
 			}
 
+			log.Printf("subsequent snapshot: ")
 			for _, change := range snap.Changes {
 				if change.Kind == gfs.DocumentAdded || change.Kind == gfs.DocumentModified {
 					var job domain.MigrationJob
