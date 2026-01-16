@@ -23,18 +23,18 @@ func NewService(fsClient *firestore.Client, mqClient *rabbitmq.Client) *watcherS
 
 // listens to firestore collection for changes & call pushToQueue() if a new document isnt already in the queue
 func (s *watcherService) Start(ctx context.Context) {
-	log.Println("Listening for pending jobs..")
+	log.Println("[WATCHER] Listening for pending jobs..")
 	jobs, errors := s.fsClient.ListenForPendingJobs(ctx)
 
 	for {
 		select {
 		case <-ctx.Done():
-			log.Printf("context done.")
+			log.Printf("[WATCHER] Context done.")
 			return
 		case err := <-errors:
-			log.Printf("Watcher error: %v", err)
+			log.Printf("[WATCHER] Error: %v", err)
 		case job := <-jobs:
-			log.Printf("Watcher found new job: %s", job.ID)
+			log.Printf("[WATCHER] Found new job: %s", job.ID)
 			s.queueNewJob(job, ctx)
 		}
 	}
@@ -42,21 +42,21 @@ func (s *watcherService) Start(ctx context.Context) {
 
 // pushes job to rabbitMQ & updates job status to "QUEUED"
 func (s *watcherService) queueNewJob(migrationJob domain.MigrationJob, ctx context.Context) {
-	log.Printf("queuing new job: %s", migrationJob.ID)
+	log.Printf("[WATCHER] Queuing new job: %s", migrationJob.ID)
 
 	err := s.mqClient.PublishJob(migrationJob)
 
 	if err != nil {
-		log.Printf("Error publishing job: %v", err)
+		log.Printf("[WATCHER] Error publishing job: %v", err)
 		return
 	}
-	log.Printf("job %s published to queue.", migrationJob.ID)
+	log.Printf("[WATCHER] Job %s published to queue.", migrationJob.ID)
 
 	err = s.fsClient.UpdateJobStatus(ctx, migrationJob, domain.StatusQueued)
 	if err != nil {
-		log.Printf("Error updating job status: %v", err)
+		log.Printf("[WATCHER] Error updating job status: %v", err)
 		return
 	}
 
-	log.Printf("job %s status updated to %s.", migrationJob.ID, domain.StatusQueued)
+	log.Printf("[WATCHER] Job %s status updated to %s.", migrationJob.ID, domain.StatusQueued)
 }
