@@ -1,6 +1,7 @@
 package rabbitmq
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -74,6 +75,49 @@ func (c *Client) PublishJob(job domain.MigrationJob) error {
 	return nil
 }
 
-func (c *Client) ConsumeJob() {
-	// TODO: consume job from rabbitMQ queue
+// Consumes jobs from rabbitMQ queue and returns them one by one
+func (c *Client) ConsumeJob(ctx context.Context) (chan domain.MigrationJob, chan error) {
+	jobs := make(chan domain.MigrationJob)
+	errs := make(chan error)
+
+	msgs, err := c.channel.Consume(c.queue.Name, "", false, false, false, false, nil)
+
+	if err != nil {
+		errs <- fmt.Errorf("failed to start consumer: %w", err)
+		close(jobs)
+		close(errs)
+		return jobs, errs
+	}
+	log.Printf("Consuming jobs from queue %s", c.queue.Name)
+
+	go func() {
+		defer close(jobs)
+		defer close(errs)
+
+		for {
+			select {
+			case <-ctx.Done():
+				log.Println("context done, stopping.")
+				return
+			case msg, ok := <-msgs:
+				if !ok {
+					log.Printf("message channel closed.")
+					return
+				}
+
+				var job domain.MigrationJob
+
+				if err := json.Unmarshal(msg.Body, &job); err != nil {
+					log.Printf("failed to parse body: %v", err)
+					msg.Nack(false, false)
+					continue
+				}
+				log.Printf("Emitting job: %s", job.ID)
+
+				jobs <- job
+				msg.Ack(false)
+			}
+		}
+	}()
+	return jobs, errs
 }
