@@ -122,10 +122,10 @@ func (c *Client) ListenForPendingJobs(ctx context.Context) (<-chan domain.Migrat
 }
 
 // updates job status to "IN_PROGRESS" in firestore collection
-func (c *Client) UpdateJobStatus(ctx context.Context, job domain.MigrationJob) error {
+func (c *Client) UpdateJobStatus(ctx context.Context, job domain.MigrationJob, status domain.JobStatus) error {
 	docRef := c.Client.Collection("data_migrations").Doc(job.ID)
 	_, err := docRef.Update(ctx, []firestore.Update{
-		{Path: "status", Value: domain.StatusRunning},
+		{Path: "status", Value: status},
 	})
 
 	if err != nil {
