@@ -4,7 +4,8 @@ type JobStatus string
 
 const (
 	StatusPending JobStatus = "PENDING"
-	StatusRunning JobStatus = "IN_PROGRESS"
+	StatusQueued  JobStatus = "QUEUED"
+	StatusRunning JobStatus = "RUNNING"
 	StatusDone    JobStatus = "DONE"
 	StatusFailed  JobStatus = "FAILED"
 )
