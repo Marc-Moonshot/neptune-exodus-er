@@ -131,6 +131,5 @@ func (c *Client) UpdateJobStatus(ctx context.Context, job domain.MigrationJob, s
 	if err != nil {
 		return fmt.Errorf("Failed to update job status: %w", err)
 	}
-	log.Printf("Job %s status updated to %s", job.ID, domain.StatusRunning)
 	return nil
 }
