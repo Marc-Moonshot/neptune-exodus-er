@@ -1,9 +1,12 @@
 package rabbitmq
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 
 	"github.com/Marc-Moonshot/neptune-exodus-er/internal/config"
+	"github.com/Marc-Moonshot/neptune-exodus-er/internal/domain"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -30,9 +33,11 @@ func NewClient(cfg *config.Config) (*Client, error) {
 		"migration-jobs",
 		true,
 		false,
-		true,
 		false,
-		nil,
+		false,
+		amqp.Table{
+			"x-message-deduplication": true,
+		},
 	)
 	if qErr != nil {
 		log.Printf("Error creating amqp queue.")
@@ -52,10 +57,23 @@ func (c *Client) Close() error {
 	return c.conn.Close()
 }
 
-func (c *Client) PublishJob() {
+func (c *Client) PublishJob(job domain.MigrationJob) error {
 	// TODO: push new job to rabbitMQ queue
+
+	body, err := json.Marshal(job)
+
+	if err != nil {
+		return fmt.Errorf("failed to unmarshall job object: %w", err)
+	}
+	c.channel.Publish("", c.queue.Name, false, false, amqp.Publishing{
+		MessageId:    job.ID,
+		ContentType:  "application/json",
+		Body:         body,
+		DeliveryMode: amqp.Persistent,
+	})
+	return nil
 }
 
 func (c *Client) ConsumeJob() {
-	// TODO: consume job from rabbitMQ queueu
+	// TODO: consume job from rabbitMQ queue
 }
