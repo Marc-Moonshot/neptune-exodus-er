@@ -5,22 +5,22 @@ import (
 	"log"
 
 	"github.com/Marc-Moonshot/neptune-exodus-er/internal/adapters/rabbitmq"
-	"github.com/Marc-Moonshot/neptune-exodus-er/internal/domain"
+	"github.com/Marc-Moonshot/neptune-exodus-er/internal/migrations"
 )
 
 type workerService struct {
-	mq rabbitmq.Client
+	mqClient rabbitmq.Client
 }
 
 func newService(rabbitmq *rabbitmq.Client) *workerService {
 	return &workerService{
-		mq: *rabbitmq,
+		mqClient: *rabbitmq,
 	}
 }
 
 // Starts migration function depending on job
 func (w *workerService) Start(ctx context.Context) {
-	jobs, errs := w.mq.ConsumeJob(ctx)
+	jobs, errs := w.mqClient.ConsumeJob(ctx)
 
 	for {
 		select {
@@ -36,6 +36,17 @@ func (w *workerService) Start(ctx context.Context) {
 	}
 }
 
-func (w *workerService) handleJob(job domain.MigrationJob) {
-	log.Printf("processing job %s", job.ID)
+func (w *workerService) handleJob(consumedJob rabbitmq.ConsumedJob) {
+	log.Printf("processing job %s", consumedJob.Job.ID)
+
+	var err error = nil
+	if consumedJob.Job.Type == "" || consumedJob.Job.Type == "device_migration" {
+		err = migrations.DeviceMigration(consumedJob.Job)
+	}
+
+	if err != nil {
+		log.Printf("migration error: %v", err)
+		consumedJob.Msg.Nack(false, true)
+	}
+	consumedJob.Msg.Ack(false)
 }

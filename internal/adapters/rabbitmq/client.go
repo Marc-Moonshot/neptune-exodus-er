@@ -17,6 +17,11 @@ type Client struct {
 	queue   amqp.Queue
 }
 
+type ConsumedJob struct {
+	Job domain.MigrationJob
+	Msg amqp.Delivery
+}
+
 func NewClient(cfg *config.Config) (*Client, error) {
 	conn, err := amqp.Dial(cfg.RabbitMQURL)
 	if err != nil {
@@ -58,8 +63,8 @@ func (c *Client) Close() error {
 	return c.conn.Close()
 }
 
+// pushes new job to rabbitMQ queue
 func (c *Client) PublishJob(job domain.MigrationJob) error {
-	// TODO: push new job to rabbitMQ queue
 
 	body, err := json.Marshal(job)
 
@@ -76,8 +81,8 @@ func (c *Client) PublishJob(job domain.MigrationJob) error {
 }
 
 // Consumes jobs from rabbitMQ queue and returns them one by one
-func (c *Client) ConsumeJob(ctx context.Context) (chan domain.MigrationJob, chan error) {
-	jobs := make(chan domain.MigrationJob)
+func (c *Client) ConsumeJob(ctx context.Context) (chan ConsumedJob, chan error) {
+	jobs := make(chan ConsumedJob)
 	errs := make(chan error)
 
 	msgs, err := c.channel.Consume(c.queue.Name, "", false, false, false, false, nil)
@@ -114,10 +119,15 @@ func (c *Client) ConsumeJob(ctx context.Context) (chan domain.MigrationJob, chan
 				}
 				log.Printf("Emitting job: %s", job.ID)
 
-				jobs <- job
-				msg.Ack(false)
+				jobs <- ConsumedJob{Job: job, Msg: msg}
+				// msg.Ack(false)
 			}
 		}
 	}()
 	return jobs, errs
+}
+
+func (c *Client) Acknowledge(msg amqp.Delivery) error {
+	msg.Ack(false)
+	return nil
 }
