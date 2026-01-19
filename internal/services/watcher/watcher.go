@@ -21,7 +21,7 @@ func NewService(fsClient *firestore.Client, mqClient *rabbitmq.Client) *watcherS
 	}
 }
 
-// listens to firestore collection for changes & call pushToQueue() if a new document isnt already in the queue
+// listens to firestore collection for changes & pushes to queue for each job sent through the channel
 func (s *watcherService) Start(ctx context.Context) {
 	log.Println("[WATCHER] Listening for pending jobs..")
 	jobs, errors := s.fsClient.ListenForPendingJobs(ctx)
