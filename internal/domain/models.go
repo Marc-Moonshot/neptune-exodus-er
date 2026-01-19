@@ -24,4 +24,5 @@ type MigrationJob struct {
 	CreatedAt      int64     `firestore:"createdAt" json:"created_at"`
 	CreatedBy      string    `firestore:"createdBy" json:"created_by"`
 	Error          string    `firestore:"error,omitempty" json:"error,omitempty"`
+	Type           string    `firestore:"type,omitempty" json:"type,omitempty"`
 }
