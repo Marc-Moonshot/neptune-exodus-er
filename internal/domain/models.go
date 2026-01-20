@@ -26,3 +26,22 @@ type MigrationJob struct {
 	Error          string    `firestore:"error,omitempty" json:"error,omitempty"`
 	Type           string    `firestore:"type,omitempty" json:"type,omitempty"`
 }
+
+type dataPoint struct {
+	Timestamp int64 `firestore:"timestamp"`
+	Value     int64 `firestore:"value"`
+}
+
+type errorPoint struct {
+	ErrorCode string `firestore:"errorCode"`
+	Timestamp int64  `firestore:"timestamp"`
+}
+
+type Data struct {
+	Day       int64        `firestore:"day"`
+	DeviceId  int64        `firestore:"deviceId"`
+	Pressure  []dataPoint  `firestore:"pressure"`
+	Flow_rate []dataPoint  `firestore:"flow_rate"`
+	Net_flow  []dataPoint  `firestore:"net_flow"`
+	Errors    []errorPoint `firestore:"errors"`
+}
