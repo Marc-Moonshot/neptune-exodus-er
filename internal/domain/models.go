@@ -37,6 +37,20 @@ type errorPoint struct {
 	Timestamp int64  `firestore:"timestamp"`
 }
 
+type Device struct {
+	Id              string   `firestore:"id"`
+	Device_number   int64    `firestore:"device_number"`
+	Nickname        string   `firestore:"nickname"`
+	Last_status     string   `firestore:"last_status"`
+	Last_contact    int64    `firestore:"last_contact"`
+	Date_registered int64    `firestore:"date_registered"`
+	Rtu_assigned    int64    `firestore:"rtu_assigned"`
+	Device_type     string   `firestore:"device_type"`
+	Device_code     string   `firestore:"device_code"`
+	Live            bool     `firestore:"live"`
+	Units           []string `firestore:"units"`
+}
+
 type Data struct {
 	Day       int64        `firestore:"day"`
 	DeviceId  int64        `firestore:"deviceId"`
