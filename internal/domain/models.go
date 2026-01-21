@@ -52,6 +52,7 @@ type Device struct {
 }
 
 type Data struct {
+	Id        string       `firestore:"-"`
 	Day       int64        `firestore:"day"`
 	DeviceId  int64        `firestore:"deviceId"`
 	Pressure  []dataPoint  `firestore:"pressure"`
