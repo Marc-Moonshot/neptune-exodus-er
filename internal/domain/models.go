@@ -13,6 +13,7 @@ const (
 // migration task document from Firestore
 type MigrationJob struct {
 	ID             string    `firestore:"-" json:"-"`
+	DeviceType     string    `firestore:"deviceType" json:"device_type"`
 	FromDevice     int64     `firestore:"fromDevice" json:"from_device"`
 	ToDevice       int64     `firestore:"toDevice" json:"to_device"`
 	Status         JobStatus `firestore:"status" json:"status"`
